@@ -12,6 +12,16 @@ function App() {
               console.log(name.getSaveData())
             }}
           >Save</button>
+           <button
+            onClick={() => {
+              console.log(name.clear())
+            }}
+          >Clear</button>
+           <button
+            onClick={() => {
+              console.log(name.undo())
+            }}
+          >undo</button>
     </div>
   );
 }
