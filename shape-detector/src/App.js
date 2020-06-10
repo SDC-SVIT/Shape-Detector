@@ -7,8 +7,11 @@ function App() {
   let start={"x":271.7999832084339,"y":443.80183314212593};
   let end={"x":400.37165164258187,"y":220.0181007035567};
   let middle={"x":685.37165164258187,"y":300.0181007035567};
-  let points=[start,middle,end,start] 
-  let diagram={"lines": [{"points":points,"brushColor":"#444","brushRadius":2}],"width":1500,"height":720}    
+  let middlepoints1 = calculateMidPoints(start,middle,end);
+  let middlepoints2 = calculateMidPoints(middle,end,start);
+  console.log(JSON.stringify(middlepoints2))
+  let points=[start, ...middlepoints1, ...middlepoints2,start] 
+  let diagramCustom={"lines": [{"points":points,"brushColor":"#444","brushRadius":2}],"width":1500,"height":720}    
   return (
     <div className="App">
         <CanvasDraw lazyRadius={1} ref={canvasDraw => {name = canvasDraw}} brushRadius={2} canvasWidth={1500} canvasHeight={720}/>
@@ -31,18 +34,17 @@ function App() {
               let data=name.getSaveData();
               data=JSON.parse(data)
               let line_data=data.lines[0]
-              let return_object={gradiant:[],current_point:{}}
-              let points_diff=line_data.points.reduce((previous_value,current_value,current_index)=>{
-                if (current_index === 0) {
-                  previous_value.current_point=current_value
-            
-                }
-                return {gradiant:[...previous_value.gradiant,((current_value.y-previous_value.current_point.y)/(current_value.x-previous_value.current_point.x))],
-                current_point:current_value}
+              let return_object={gradients:[],current_point:{}}
+              let points_diff = line_data.points.reduce((previous_value,current_value,current_index)=>{
+                
+                if (current_index === 0) previous_value.current_point=current_value;
+
+                return {gradients:[...previous_value.gradients,((current_value.y-previous_value.current_point.y)/(current_value.x-previous_value.current_point.x))],current_point:current_value}
               },return_object);
               console.log(points_diff)
-              let start=line_data.points[0]
-              let end=line_data.points[line_data.points.length-1]
+
+              // let start=line_data.points[0]
+              // let end=line_data.points[line_data.points.length-1]
               let diagram={"lines": [{"points":[start,end],"brushColor":"#444","brushRadius":2}],"width":1500,"height":720}
               name.loadSaveData(JSON.stringify(diagram),true)
             }}
@@ -51,17 +53,56 @@ function App() {
            <button
             onClick={() => {
               console.log(name.clear())
-              console.log(isNaN(1/0))
+              // console.log(isNaN(1/0))
             }}
           >Clear</button>
            <button
             onClick={() => {
-            //  console.log(name.undo())
-              name.loadSaveData(JSON.stringify(diagram),true)
+             console.log(diagramCustom)  //name.undo()
+              name.loadSaveData(JSON.stringify(diagramCustom),true)
             }}
           >undo</button>
     </div>
   );
+}
+
+function generateTriangle(point1, point2, point3) {
+  let middlepoints1 = calculateMidPoints(point1,point2,point3);
+  let middlepoints2 = calculateMidPoints(point2,point3,point1);
+  console.log(JSON.stringify(middlepoints2))
+  let points=[point1, ...middlepoints1, ...middlepoints2, point1] 
+  let diagramCustom={"lines": [{"points":points,"brushColor":"#444","brushRadius":2}],"width":1500,"height":720}    
+  return diagramCustom
+}
+
+function calculateMidPoints(point1, point2, point3) {
+  let delta = 0.00007
+  let NEARPOINTS = 1
+  let midpoints = []
+  // for line 1
+  let m1 = (point2.x-point1.x !== 0 && point2.y-point1.y !== 0)?((point2.y-point1.y)/(point2.x-point1.x)):1;
+  let c1 = point2.y - (point2.x*m1)
+  // for line 2
+  let m2 = (point3.x-point2.x !== 0 && point2.y-point1.y !== 0)?((point3.y-point2.y)/(point3.x-point2.x)):1;
+  let c2 = point2.y - (point2.x*m2)
+  // points before the vertice point
+  // console.log("Points between:"+JSON.stringify(point1)+" and "+JSON.stringify(point2))
+  for (let index = 0; index < NEARPOINTS; index++) {
+    let calculatedPoint = {x:(point2.x-index*delta),y:(m1*(point2.x-index*delta)+c1)}
+    console.log(calculatedPoint)
+    midpoints.push(calculatedPoint)
+  }
+  // vertice point
+  midpoints.push(point2)
+  //Points after the vertice point
+  // console.log("Points between:"+JSON.stringify(point2)+" and "+JSON.stringify(point3))
+  for (let index = 0; index < NEARPOINTS; index++) {
+    let calculatedPoint = { x:(point2.x+index*delta), y:(m2*(point2.x+index*delta)+c2)}
+    console.log(calculatedPoint)
+    midpoints.push(calculatedPoint)
+  }
+  // console.log(midpoints)
+  return midpoints;
 }
 
 export default App;
