@@ -42,7 +42,17 @@ function App() {
                 return {gradients:[...previous_value.gradients,((current_value.y-previous_value.current_point.y)/(current_value.x-previous_value.current_point.x))],current_point:current_value}
               },return_object);
               console.log(points_diff)
-
+              let vertices = points_diff.gradients.reduce((previous_value,current_point,current_index)=>
+              {
+                if(current_point>0 && previous_value.last_point<0||current_point<0 && previous_value.last_point>0)
+                {
+                  previous_value.vertices.push(current_index)
+                }
+                previous_value.last_point=current_point;
+                return previous_value;
+              },{vertices:[],last_point:points_diff.gradients[0]}
+              )
+              console.log(vertices)
               // let start=line_data.points[0]
               // let end=line_data.points[line_data.points.length-1]
               let diagram={"lines": [{"points":[start,end],"brushColor":"#444","brushRadius":2}],"width":1500,"height":720}
@@ -86,8 +96,8 @@ function calculateMidPoints(point1, point2, point3) {
   let m2 = (point3.x-point2.x !== 0 && point2.y-point1.y !== 0)?((point3.y-point2.y)/(point3.x-point2.x)):1;
   let c2 = point2.y - (point2.x*m2)
   // points before the vertice point
-  // console.log("Points between:"+JSON.stringify(point1)+" and "+JSON.stringify(point2))
-  for (let index = 0; index < NEARPOINTS; index++) {
+  console.log("Points between:"+JSON.stringify(point1)+" and "+JSON.stringify(point2))
+  for (let index = 1; index < NEARPOINTS+1; index++) {
     let calculatedPoint = {x:(point2.x-index*delta),y:(m1*(point2.x-index*delta)+c1)}
     console.log(calculatedPoint)
     midpoints.push(calculatedPoint)
@@ -95,13 +105,13 @@ function calculateMidPoints(point1, point2, point3) {
   // vertice point
   midpoints.push(point2)
   //Points after the vertice point
-  // console.log("Points between:"+JSON.stringify(point2)+" and "+JSON.stringify(point3))
-  for (let index = 0; index < NEARPOINTS; index++) {
+   console.log("Points between:"+JSON.stringify(point2)+" and "+JSON.stringify(point3))
+  for (let index = 1; index < NEARPOINTS+1; index++) {
     let calculatedPoint = { x:(point2.x+index*delta), y:(m2*(point2.x+index*delta)+c2)}
     console.log(calculatedPoint)
     midpoints.push(calculatedPoint)
   }
-  // console.log(midpoints)
+  console.log(midpoints)
   return midpoints;
 }
 
