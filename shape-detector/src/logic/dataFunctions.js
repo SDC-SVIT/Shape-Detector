@@ -1,107 +1,223 @@
+/**
+ * This file contains various functions and their descriptions used for calculations in the canvas for shape recognization
+ * 
+ * Made by: Team AI udd
+ * 
+ */
+
+
+
+/**
+ *  Function for calculating the vertice points of the shape.
+ *  @param [{x,y},{x,y}] pointsArray ----------> The array of points of the shape made by the user.
+ *  @returns [{x,y},{x,y},{x,y}] Vertices -----> The array of vertices calculated by the function
+ *
+ */
 export function calculateVertices(pointsArray) {
-  console.log("pointsArray is:")
-  console.log(pointsArray)
-  let return_object = { gradients: [], current_point: {} }
-  let points_diff = pointsArray.points.reduce(
-    (previous_value, current_value, current_index) => {
-      if (current_index === 0) previous_value.current_point = current_value
 
-      return {
-        gradients: [
-          ...previous_value.gradients,
-          (current_value.y - previous_value.current_point.y) /
-          (current_value.x - previous_value.current_point.x)
-        ],
-        current_point: current_value
-      }
-    },
-    return_object
-  )
-  console.log("points_diff is:")
-  console.log(points_diff)
-  let vertices = points_diff.gradients.reduce(
-    (previous_value, current_point, current_index) => {
-      if (
-        (current_point >= 0 && previous_value.prev_point <= 0) ||
-        (current_point <= 0 && previous_value.prev_point >= 0)
-      ) {
-        previous_value.vertices.push(current_index)
-      }
-      previous_value.prev_point = current_point
-      return previous_value
-    },
-    { vertices: [], prev_point: points_diff.gradients[0] }
-  )
-  console.log("Vertices are:")
-  console.log(pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length / 2)]])
-  return [
-    pointsArray.points[0],
-    pointsArray.points[vertices.vertices[0]],
-    pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length - 1)]]
-  ]
+    /**
+     * Primarily, Calculating the gradients between the set of points
+     */
+    // console.log("pointsArray is:");console.log(pointsArray)
+    let intial_gradients_object = { gradients: [], prev_point: {} }
+
+    let gradient_list = pointsArray.points.reduce(
+        (grads_and_prev_point, current_point, current_index) => {
+            if (current_index === 0) grads_and_prev_point.prev_point = current_point
+
+            // Calculating the gradient using current_point and prev_point
+            let current_gradient = (current_point.y - grads_and_prev_point.prev_point.y) / (current_point.x - grads_and_prev_point.prev_point.x)
+
+            return {
+                gradients: [
+                    ...grads_and_prev_point.gradients,
+                    current_gradient
+                ],
+                prev_point: current_point
+            }
+        },
+        intial_gradients_object
+    ).gradients
+
+    /**
+     * gradient_list contains the gradients between the points given in the array.
+     * Based on the gradients, Calculating the vertices
+     */
+    let vertices = gradient_list.reduce(
+        (previous_value, current_point, current_index) => {
+            if (
+                (current_point >= 0 && previous_value.prev_point <= 0) ||
+                (current_point <= 0 && previous_value.prev_point >= 0)
+            ) {
+                previous_value.vertices.push(current_index)
+            }
+            previous_value.prev_point = current_point
+            return previous_value
+        },
+        { vertices: [], prev_point: gradient_list[0] }
+    )
+    // console.log("Vertices are:");console.log(pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length / 2)]])
+
+    // returning the vertices
+    return [
+        pointsArray.points[0],
+        pointsArray.points[vertices.vertices[1]],
+        pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length - 1)]]
+    ]
 }
 
+
+
+
+/**
+ * Function created to get the necessary points to draw a triangle in react-canvas-draw
+ * @param {x,y} point1 ---->  Vertice 1
+ * @param {x,y} point2 ---->  Vertice 2
+ * @param {x,y} point3 ---->  Vertice 3
+ * @returns {lines,width,height} triangleDiagram ----> react-canvas-draw load object
+ */
 export function generateTriangle(point1, point2, point3) {
-  let middlepoints1 = calculateMidPoints(point1, point2, point3)
-  let middlepoints2 = calculateMidPoints(point2, point3, point1)
-  console.log(JSON.stringify(middlepoints2))
-  let points = [point1, ...middlepoints1, ...middlepoints2, point1]
-  let diagramCustom = {
-    lines: [{ points: points, brushColor: '#444', brushRadius: 2 }],
-    width: 1500,
-    height: 720
-  }
-  return diagramCustom
+    /**
+     *        Consider the following triangle:
+     * 
+     *                point2
+     *                   .
+     *                  / \
+     *                /    \
+     *     line a <- /      \ -> line b
+     *              /________\
+     *        point1   |    point3
+     *                 ˇ
+     *             line c
+     *                
+     *      Here, 
+     *      Line a -> Line 1
+     *      Line b -> Line 2
+     *      Line c -> Line 3
+     */
+
+    /*  Intermediate points near point 2 of the triangle  */
+    let middlepoints1 = calculateMidPoints(point1, point2, point3)
+    /*  Intermediate points near point 3 of the triangle  */
+    let middlepoints2 = calculateMidPoints(point2, point3, point1)
+
+    // Generate the set of points needed for the triangle
+    let points = [point1, ...middlepoints1, ...middlepoints2, point1]
+
+    //Create the drawing Object input to react-canvas-draw load function
+    let traingleDiagram = {
+        lines: [{ points: points, brushColor: '#444', brushRadius: 2 }],
+        width: 1500,
+        height: 720
+    }
+    return traingleDiagram
 }
 
+
+
+/**
+ * This function calculates the points near point2 lying on line 1 and line 2 and return a continuous set of points
+ * @param {x,y} point1 Vertice 1
+ * @param {x,y} point2 Vertice 2
+ * @param {x,y} point3 Vertice 3
+ * @returns [{x,y},{x,y}] midpoints
+ */
 export function calculateMidPoints(point1, point2, point3) {
-  let delta = 0.00007
-  let NEARPOINTS = 1
-  let midpoints = []
-  // for line 1
-  let m1 =
-    point2.x - point1.x !== 0 /* && point2.y - point1.y !== 0*/
-      ? (point2.y - point1.y) / (point2.x - point1.x)
-      : Number.MAX_SAFE_INTEGER
-  let c1 = point2.y - point2.x * m1
-  // for line 2
-  let m2 =
-    point3.x - point2.x !== 0 /*&& point2.y - point1.y !== 0*/
-      ? (point3.y - point2.y) / (point3.x - point2.x)
-      : Number.MAX_SAFE_INTEGER
-  let c2 = point2.y - point2.x * m2
-  // points before the vertice point
-  console.log(
-    'Points between:' +
-    JSON.stringify(point1) +
-    ' and ' +
-    JSON.stringify(point2)
-  )
-  for (let index = 1; index < NEARPOINTS + 1; index++) {
-    let calculatedPoint = {
-      x: point2.x - index * delta,
-      y: m1 * (point2.x - index * delta) + c1
+    // Constants
+    let delta = 0.00007
+    let NEARPOINTS = 1
+
+    // Array of resultant points
+    let midpoints = []
+
+    //Calculate line constants
+    let { m1, c1, m2, c2 } = calculateLineParamtersForVertice(point1, point2, point3)
+
+    /**
+     * Calculating and adding the points before the vertice point
+     * These points will lie between the vertex point 1 and vertex point 2 on line 1.
+     */
+    console.log('Points between:' + JSON.stringify(point1) + ' and ' + JSON.stringify(point2))
+    for (let index = 1; index < NEARPOINTS + 1; index++) {
+        let calculatedPoint = {
+            x: point2.x - index * delta,
+            y: m1 * (point2.x - index * delta) + c1
+        }
+        midpoints.push(calculatedPoint)
     }
-    console.log(calculatedPoint)
-    midpoints.push(calculatedPoint)
-  }
-  // vertice point
-  midpoints.push(point2)
-  //Points after the vertice point
-  console.log(
-    'Points between:' +
-    JSON.stringify(point2) +
-    ' and ' +
-    JSON.stringify(point3)
-  )
-  for (let index = 1; index < NEARPOINTS + 1; index++) {
-    let calculatedPoint = {
-      x: point2.x + index * delta,
-      y: m2 * (point2.x + index * delta) + c2
+
+
+    // Pushing the vertice point into the Result array
+    midpoints.push(point2)
+
+
+    /**
+     *  Calculating and adding the points after the vertice point
+     *  These points will lie between the vertex point 2 and vertex point 3 on line 2.
+     */
+    for (let index = 1; index < NEARPOINTS + 1; index++) {
+        console.log("m2=" + m2)
+        let calculatedPoint = {
+            x: point2.x + index * delta,
+            y: m2 * (point2.x + index * delta) + c2
+        }
+        midpoints.push(calculatedPoint)
     }
-    console.log(calculatedPoint)
-    midpoints.push(calculatedPoint)
-  }
-  console.log(midpoints)
-  return midpoints
+
+    // console.log("The Final set of midpoints are:");console.log(midpoints)
+    return midpoints
+}
+
+
+
+/**
+ * This function calculates line parameters for 2 lines line 1 and line 2
+ * @param {x,y} point1 Vertice 1
+ * @param {x,y} point2 Vertice 2
+ * @param {x,y} point3 Vertice 3
+ * @returns {m1,c1,m2,c2} parameters
+ */
+function calculateLineParamtersForVertice(point1, point2, point3) {
+    // for line 1  
+    let line1 = calculateLineVariables(point1, point2)
+
+    // for line 2
+    let line2 = calculateLineVariables(point2, point3)
+
+    return { m1: line1.m, c1: line1.c, m2: line2.m, c2: line2.c }
+}
+
+
+/**
+ * Calculates and return paramters if a single line
+ * @param {x,y} point1 Vertice 1
+ * @param {x,y} point2 Vertice 2
+ * @returns {m,c} parameters 
+ * where, m: slope,
+ *        c: y-intercept
+ */
+function calculateLineVariables(point1, point2) {
+    /**********************************************************************
+      Equation of the line: y = m*x + c
+      where m: slope of the line
+            c: y-intercept
+  
+      therefore using 2 points,
+      m = Δy/Δx
+      i.e. m = (y2 - y1)/(x2 - x1)
+  
+      and,
+      c = y2 - m*x2           [∵ y2 = m*x2 + c]
+  
+    ************************************************************************/
+
+    //slope of line 
+    let m = point2.x - point1.x !== 0 /* && point2.y - point1.y !== 0*/
+        ? (point2.y - point1.y) / (point2.x - point1.x)
+        : Number.MAX_SAFE_INTEGER
+
+    //shift of line 
+    let c = point2.y - point2.x * m
+
+    return { m, c }
 }
