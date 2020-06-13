@@ -17,6 +17,7 @@ export function calculateVertices(pointsArray) {
 
     /**
      * Primarily, Calculating the gradients between the set of points
+     * 
      */
     // console.log("pointsArray is:");console.log(pointsArray)
     let intial_gradients_object = { gradients: [], prev_point: {} }
@@ -43,20 +44,29 @@ export function calculateVertices(pointsArray) {
      * gradient_list contains the gradients between the points given in the array.
      * Based on the gradients, Calculating the vertices
      */
-    let vertices = gradient_list.reduce(
-        (previous_value, current_point, current_index) => {
-            if (
-                (current_point >= 0 && previous_value.prev_point <= 0) ||
-                (current_point <= 0 && previous_value.prev_point >= 0)
-            ) {
-                previous_value.vertices.push(current_index)
-            }
-            previous_value.prev_point = current_point
-            return previous_value
-        },
-        { vertices: [], prev_point: gradient_list[0] }
+    let vertices = gradient_list.reduce((previous_value, current_point, current_index) => {
+        if (
+            (current_point >= 0 && previous_value.prev_point <= 0) ||
+            (current_point <= 0 && previous_value.prev_point >= 0)
+        ) {
+            previous_value.vertices.push(current_index)
+        }
+        previous_value.prev_point = current_point
+        return previous_value
+    },{ vertices: [], prev_point: gradient_list[0] }
     )
-    // console.log("Vertices are:");console.log(pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length / 2)]])
+    
+
+    /**
+     * Trying recognization of vertices with window
+     */
+    let vertices_trial = gradient_list.reduce((prev_avg_gradients,current_gradient,current_index,all_gradients)=>{
+        let avg_grad = all_gradients.slice(current_index,current_index+10).reduce((accumulator, cuurent_value)=>accumulator+cuurent_value)/10;
+        prev_avg_gradients.push(avg_grad)
+    },[])
+
+
+
 
     // returning the vertices
     return [
