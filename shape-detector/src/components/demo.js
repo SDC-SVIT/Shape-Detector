@@ -1,6 +1,6 @@
 import React from "react";
 
-function CustomCanvas(props) {
+function DemoComponent(props) {
   return (
     <>
       Hello {props.namem}, {props.named}, {props.nameb}, {props.namen}
@@ -8,4 +8,4 @@ function CustomCanvas(props) {
   );
 }
 
-export default CustomCanvas;
+export default DemoComponent;

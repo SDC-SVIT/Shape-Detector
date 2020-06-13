@@ -1,6 +1,6 @@
-export function calculateVertices (pointsArray) {
+export function calculateVertices(pointsArray) {
   console.log("pointsArray is:")
-    console.log(pointsArray)
+  console.log(pointsArray)
   let return_object = { gradients: [], current_point: {} }
   let points_diff = pointsArray.points.reduce(
     (previous_value, current_value, current_index) => {
@@ -10,7 +10,7 @@ export function calculateVertices (pointsArray) {
         gradients: [
           ...previous_value.gradients,
           (current_value.y - previous_value.current_point.y) /
-            (current_value.x - previous_value.current_point.x)
+          (current_value.x - previous_value.current_point.x)
         ],
         current_point: current_value
       }
@@ -33,15 +33,15 @@ export function calculateVertices (pointsArray) {
     { vertices: [], prev_point: points_diff.gradients[0] }
   )
   console.log("Vertices are:")
-  console.log(pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length/2)]])
+  console.log(pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length / 2)]])
   return [
-      pointsArray.points[0],
-      pointsArray.points[vertices.vertices[0]],
-      pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length-1)]]
+    pointsArray.points[0],
+    pointsArray.points[vertices.vertices[0]],
+    pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length - 1)]]
   ]
 }
 
-export function generateTriangle (point1, point2, point3) {
+export function generateTriangle(point1, point2, point3) {
   let middlepoints1 = calculateMidPoints(point1, point2, point3)
   let middlepoints2 = calculateMidPoints(point2, point3, point1)
   console.log(JSON.stringify(middlepoints2))
@@ -54,7 +54,7 @@ export function generateTriangle (point1, point2, point3) {
   return diagramCustom
 }
 
-export function calculateMidPoints (point1, point2, point3) {
+export function calculateMidPoints(point1, point2, point3) {
   let delta = 0.00007
   let NEARPOINTS = 1
   let midpoints = []
@@ -73,9 +73,9 @@ export function calculateMidPoints (point1, point2, point3) {
   // points before the vertice point
   console.log(
     'Points between:' +
-      JSON.stringify(point1) +
-      ' and ' +
-      JSON.stringify(point2)
+    JSON.stringify(point1) +
+    ' and ' +
+    JSON.stringify(point2)
   )
   for (let index = 1; index < NEARPOINTS + 1; index++) {
     let calculatedPoint = {
@@ -90,9 +90,9 @@ export function calculateMidPoints (point1, point2, point3) {
   //Points after the vertice point
   console.log(
     'Points between:' +
-      JSON.stringify(point2) +
-      ' and ' +
-      JSON.stringify(point3)
+    JSON.stringify(point2) +
+    ' and ' +
+    JSON.stringify(point3)
   )
   for (let index = 1; index < NEARPOINTS + 1; index++) {
     let calculatedPoint = {
