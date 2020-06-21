@@ -27,7 +27,16 @@ export function calculateVertices(pointsArray) {
             if (current_index === 0) grads_and_prev_point.prev_point = current_point
 
             // Calculating the gradient using current_point and prev_point
-            let current_gradient = (current_point.y - grads_and_prev_point.prev_point.y) / (current_point.x - grads_and_prev_point.prev_point.x)
+
+            // Firstly, We calculated approximately the current gradient in approx_current_grad. 
+            // If it is a NaN then the current_gradient will be the previous gradient if it exists, else the current_gradient would be 0.
+            // If it is not a NaN then the approx_current_grad would be okay as the current_gradient of that point.
+
+            let prev_grads_array = grads_and_prev_point.gradients;
+            let prev_grad_last_index = prev_grads_array.length-1;
+            let last_grad = prev_grads_array[prev_grad_last_index];
+            let approx_current_grad = (current_point.y - grads_and_prev_point.prev_point.y) / (current_point.x - grads_and_prev_point.prev_point.x);
+            let current_gradient = isNaN( approx_current_grad ) ? ( ( last_grad !== 0 ) && ( prev_grad_last_index + 1  !== 0) ? last_grad: 0) : approx_current_grad;  
 
             return {
                 gradients: [
@@ -60,10 +69,10 @@ export function calculateVertices(pointsArray) {
     /**
      * Trying recognization of vertices with window
      */
-    let vertices_trial = gradient_list.reduce((prev_avg_gradients,current_gradient,current_index,all_gradients)=>{
-        let avg_grad = all_gradients.slice(current_index,current_index+10).reduce((accumulator, cuurent_value)=>accumulator+cuurent_value)/10;
-        prev_avg_gradients.push(avg_grad)
-    },[])
+    // let vertices_trial = gradient_list.reduce((prev_avg_gradients,current_gradient,current_index,all_gradients)=>{
+    //     let avg_grad = all_gradients.slice(current_index,current_index+10).reduce((accumulator, cuurent_value)=>accumulator+cuurent_value)/10;
+    //     prev_avg_gradients.push(avg_grad)
+    // },[])
 
 
 
@@ -147,7 +156,7 @@ export function calculateMidPoints(point1, point2, point3) {
      * Calculating and adding the points before the vertice point
      * These points will lie between the vertex point 1 and vertex point 2 on line 1.
      */
-    console.log('Points between:' + JSON.stringify(point1) + ' and ' + JSON.stringify(point2))
+    // console.log('Points between:' + JSON.stringify(point1) + ' and ' + JSON.stringify(point2))
     for (let index = 1; index < NEARPOINTS + 1; index++) {
         let calculatedPoint = {
             x: point2.x - index * delta,
@@ -166,7 +175,7 @@ export function calculateMidPoints(point1, point2, point3) {
      *  These points will lie between the vertex point 2 and vertex point 3 on line 2.
      */
     for (let index = 1; index < NEARPOINTS + 1; index++) {
-        console.log("m2=" + m2)
+        // console.log("m2=" + m2)
         let calculatedPoint = {
             x: point2.x + index * delta,
             y: m2 * (point2.x + index * delta) + c2

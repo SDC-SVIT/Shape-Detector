@@ -20,6 +20,7 @@ function BottomButtonBar(props) {
                 let start = line_data.points[0]
                 let end = line_data.points[line_data.points.length - 1]
                 let diagram = { "lines": [{ "points": [start, end], "brushColor": "#444", "brushRadius": 2 }], "width": 1500, "height": 720 }
+                console.log(diagram);
                 props.canvasRef.loadSaveData(JSON.stringify(diagram), true)
             }}
             >Lineate</button>
@@ -35,7 +36,8 @@ function BottomButtonBar(props) {
                     let vertices = calculateVertices(line_data)
                     console.log(vertices)
                     let diagram = generateTriangle(vertices[0], vertices[1], vertices[2])
-                    props.canvasRef.loadSaveData(JSON.stringify(diagram), true)
+                    console.log(diagram);
+                    props.canvasRef.loadSaveData(JSON.stringify(diagram),true)
                 }}
             >Triangulate</button>
 
