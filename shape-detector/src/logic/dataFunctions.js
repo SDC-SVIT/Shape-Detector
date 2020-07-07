@@ -36,8 +36,8 @@ export function calculateVertices(pointsArray) {
             let prev_grad_last_index = prev_grads_array.length-1;
             let last_grad = prev_grads_array[prev_grad_last_index];
             let approx_current_grad = (current_point.y - grads_and_prev_point.prev_point.y) / (current_point.x - grads_and_prev_point.prev_point.x);
-            let current_gradient = isNaN( approx_current_grad ) ? ( ( last_grad !== 0 ) && ( prev_grad_last_index + 1  !== 0) ? last_grad: 0) : approx_current_grad;  
-
+            let current_gradient = isNaN( approx_current_grad ) ? ( ( last_grad != 0 ) && ( prev_grad_last_index + 1  != 0) ? last_grad: 0) : approx_current_grad;  
+            // let current_gradient = (current_point.y - grads_and_prev_point.prev_point.y) / (current_point.x - grads_and_prev_point.prev_point.x)
             return {
                 gradients: [
                     ...grads_and_prev_point.gradients,
@@ -55,8 +55,8 @@ export function calculateVertices(pointsArray) {
      */
     let vertices = gradient_list.reduce((previous_value, current_point, current_index) => {
         if (
-            (current_point >= 0 && previous_value.prev_point <= 0) ||
-            (current_point <= 0 && previous_value.prev_point >= 0)
+            (current_point > 0 && previous_value.prev_point <= 0) ||
+            (current_point < 0 && previous_value.prev_point >= 0)
         ) {
             previous_value.vertices.push(current_index)
         }
@@ -65,24 +65,44 @@ export function calculateVertices(pointsArray) {
     },{ vertices: [], prev_point: gradient_list[0] }
     )
     
-
+    console.log("entering vertices_trial")
     /**
      * Trying recognization of vertices with window
      */
-    // let vertices_trial = gradient_list.reduce((prev_avg_gradients,current_gradient,current_index,all_gradients)=>{
-    //     let avg_grad = all_gradients.slice(current_index,current_index+10).reduce((accumulator, cuurent_value)=>accumulator+cuurent_value)/10;
-    //     prev_avg_gradients.push(avg_grad)
-    // },[])
+    let gradient_trial = gradient_list.reduce((prev_avg_gradients,current_gradient,current_index,all_gradients)=>{
+if(current_index < all_gradients.length-10)
+{let avg_grad = all_gradients.slice(current_index,current_index+10).reduce((accumulator, cuurent_value)=>accumulator+cuurent_value)/10;
+        console.log(prev_avg_gradients)
+        prev_avg_gradients.push(avg_grad)
+        return prev_avg_gradients}
+        else{
+            return prev_avg_gradients
+        }
+        
+    },[])
+    let  vertices_trial=gradient_trial.reduce((previous_value, current_point, current_index) => {
 
-
+        if (
+            (current_point > 0 && previous_value.prev_point <= 0) ||
+            (current_point < 0 && previous_value.prev_point >= 0)
+        ) {
+            previous_value.vertices.push(current_index)
+        }
+        previous_value.prev_point = current_point
+        return previous_value
+    },{ vertices: [], prev_point: gradient_list[0] }
+    )
+   let return_obj=[
+    pointsArray.points[0],
+    pointsArray.points[vertices_trial[1]],
+    pointsArray.points[vertices_trial[(vertices_trial.length - 1)]]
+]
+console.log("In calculate vertices ")
+console.log(return_obj)
 
 
     // returning the vertices
-    return [
-        pointsArray.points[0],
-        pointsArray.points[vertices.vertices[1]],
-        pointsArray.points[vertices.vertices[parseInt(vertices.vertices.length - 1)]]
-    ]
+   return return_obj
 }
 
 
@@ -122,7 +142,7 @@ export function generateTriangle(point1, point2, point3) {
 
     // Generate the set of points needed for the triangle
     let points = [point1, ...middlepoints1, ...middlepoints2, point1]
-
+    console.log(points)
     //Create the drawing Object input to react-canvas-draw load function
     let traingleDiagram = {
         lines: [{ points: points, brushColor: '#444', brushRadius: 2 }],
@@ -156,7 +176,7 @@ export function calculateMidPoints(point1, point2, point3) {
      * Calculating and adding the points before the vertice point
      * These points will lie between the vertex point 1 and vertex point 2 on line 1.
      */
-    // console.log('Points between:' + JSON.stringify(point1) + ' and ' + JSON.stringify(point2))
+    console.log('Points between:' + JSON.stringify(point1) + ' and ' + JSON.stringify(point2))
     for (let index = 1; index < NEARPOINTS + 1; index++) {
         let calculatedPoint = {
             x: point2.x - index * delta,
@@ -183,7 +203,7 @@ export function calculateMidPoints(point1, point2, point3) {
         midpoints.push(calculatedPoint)
     }
 
-    // console.log("The Final set of midpoints are:");console.log(midpoints)
+    console.log("The Final set of midpoints are:");console.log(midpoints)
     return midpoints
 }
 
