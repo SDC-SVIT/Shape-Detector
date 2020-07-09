@@ -54,16 +54,16 @@ export function calculateVertices(pointsArray) {
      * Based on the gradients, Calculating the vertices
      */
     let vertices = gradient_list.reduce(
-        (previous_value, current_point, current_index) => {
+        (previous_values, current_gradient, current_index) => {
             if (
-                (current_point > 0 && previous_value.prev_point <= 0) ||
-                (current_point < 0 && previous_value.prev_point >= 0)
+                (current_gradient > 0 && previous_values.prev_gradient <= 0) ||
+                (current_gradient < 0 && previous_values.prev_gradient >= 0)
             ) {
-                previous_value.vertices.push(current_index)
+                previous_values.vertices.push(current_index)
             }
-            previous_value.prev_point = current_point
-            return previous_value
-        }, { vertices: [], prev_point: gradient_list[0] }
+            previous_values.prev_gradient = current_gradient
+            return previous_values
+        }, { vertices: [], prev_gradient: gradient_list[0] }
     )
 
     // console.log('entering vertices_trial')
